@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=16">
+</head>
+<body>
+    <header>
+        <a class="brand" href="{% url 'index' %}" aria-label="На главную">
+            <span class="brand-mark">F</span>
+            <span class="brand-copy">
+                <strong>Flower Atelier</strong>
+                <small>Авторские букеты и бережная доставка</small>
+            </span>
+        </a>
+        <div class="icons">
+            {% if user.is_authenticated and user.is_staff %}
+            <div class="admin-shortcuts">
+                <div class="cart-actions1"><a href="{% url 'create_product' %}"><button type="button">Добавить товар</button></a></div>
+                <div class="cart-actions1"><a href="{% url 'admin_orders' %}"><button type="button">Заказы</button></a></div>
+            </div>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <div class="cart-actions1"><a href="{% url 'logout' %}"><button type="button">Выйти</button></a></div>
+            <a class="icon-link" href="{% url 'profile' %}" aria-label="Профиль">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 12a4.25 4.25 0 1 0-4.25-4.25A4.25 4.25 0 0 0 12 12Zm0 2.25c-4.03 0-7.25 2.15-7.25 4.8 0 .39.31.7.7.7h13.1a.7.7 0 0 0 .7-.7c0-2.65-3.22-4.8-7.25-4.8Z" fill="currentColor"/>
+                </svg>
+            </a>
+            {% else %}
+            <div class="cart-actions1"><a href="{% url 'login' %}"><button type="button">Войти</button></a></div>
+            {% endif %}
+            <a class="icon-link icon-link--cart" href="{% url 'cart' %}" aria-label="Корзина">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8.2 18.5a1.6 1.6 0 1 0 1.6 1.6 1.6 1.6 0 0 0-1.6-1.6Zm8 0a1.6 1.6 0 1 0 1.6 1.6 1.6 1.6 0 0 0-1.6-1.6ZM6.1 5h13.3a.7.7 0 0 1 .68.87l-1.42 5.64a2.1 2.1 0 0 1-2.03 1.59H9.27a2.1 2.1 0 0 1-2.04-1.62L5.2 3.9H3.6a.7.7 0 1 1 0-1.4h2.13a.7.7 0 0 1 .68.52Z" fill="currentColor"/>
+                </svg>
+            </a>
+        </div>
+    </header>
+    <main class="page-content">
+        {% if messages %}
+        <div class="messages" aria-live="polite" aria-atomic="true">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block body %}{% endblock %}
+    </main>
+    <footer>
+        <p>2026 Цветочный Магазин</p>
+    </footer>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.message').forEach((message) => {
+                window.setTimeout(() => {
+                    message.classList.add('message-hide');
+                }, 3000);
+                window.setTimeout(() => {
+                    message.remove();
+                }, 3600);
+            });
+        });
+    </script>
+</body>
+</html>

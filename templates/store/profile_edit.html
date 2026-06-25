@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}<title>Редактирование профиля</title>{% endblock %}
+{% block body %}
+<section class="form-page">
+    <form class='login profile-edit form-card' action="" method="post" novalidate>
+        {% csrf_token %}
+        <h1>Редактирование профиля</h1>
+        <p class="auth-subtitle">Обновите данные, чтобы оформление заказов и доставка были быстрее и точнее.</p>
+        <p>
+            {{ form.first_name.label_tag }}<br>
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+        </p>
+        <p>
+            {{ form.last_name.label_tag }}<br>
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+        </p>
+        <p>
+            {{ form.phone.label_tag }}<br>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+        </p>
+        <p>
+            {{ form.address.label_tag }}<br>
+            {{ form.address }}
+            {{ form.address.errors }}
+        </p>
+        <p><button type="submit">Сохранить</button></p>
+    </form>
+</section>
+{% endblock %}

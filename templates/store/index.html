@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% block title %}<title>О нас</title>{% endblock %}
+{% block body %}
+<nav>
+    <ul>
+        <li><a href="#home">Главная</a></li>
+        <li><a href="#about">О нас</a></li>
+        <li><a href="#products">Продукция</a></li>
+        <li><a href="#contact">Контакты</a></li>
+    </ul>
+</nav>
+<section id="home">
+    <div class="page-eyebrow hero-eyebrow">Цветочный бутик</div>
+    <h2>Букеты. В самое сердце.</h2>
+    <p>Мы предлагаем широкий ассортимент цветов для любых событий и праздников.</p>
+    <p>В нашем каталоге вы сможете найти как живые цветы, так и букеты из игрушек.</p>
+</section>
+
+<section id="about">
+    <h2>О нас</h2>
+    <p>Наш магазин специализируется на продаже свежих и красивых цветов. Мы заботимся о каждом клиенте и стремимся предложить лучшее обслуживание.</p>
+    <p>Мы производим продажу авторских букетов, а так же предоставляем услуги по продаже большого количества цветов оптом.</p>
+</section>
+
+<section id="products">
+    <h2>Продукция</h2>
+    <form class="catalog-filters" method="get">
+        <div class="catalog-filter-grid">
+            <label class="catalog-filter-field">
+                <span>Цена от</span>
+                <input type="number" name="min_price" min="0" step="1" value="{{ min_price }}" placeholder="Например, 2500">
+            </label>
+            <label class="catalog-filter-field">
+                <span>Цена до</span>
+                <input type="number" name="max_price" min="0" step="1" value="{{ max_price }}" placeholder="Например, 9000">
+            </label>
+        </div>
+        {% if available_tags %}
+        <div class="catalog-filter-tags">
+            <p class="catalog-filter-label">Теги</p>
+            <div class="catalog-tags-list" data-tags-list>
+                {% for tag in available_tags %}
+                <label class="catalog-tag-option">
+                    <input type="checkbox" name="tag" value="{{ tag.name }}" {% if tag.name in selected_tags %}checked{% endif %}>
+                    <span>{{ tag.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <div class="catalog-tags-toggle-wrap">
+                <button type="button" class="catalog-tags-toggle" data-tags-toggle>Показать все теги</button>
+            </div>
+        </div>
+        {% endif %}
+        <div class="catalog-filter-actions">
+            <a class="catalog-filter-reset" href="{% url 'index' %}">Сбросить</a>
+            <button type="submit" class="catalog-filter-submit">Применить фильтр</button>
+            <span class="catalog-filter-actions-spacer" aria-hidden="true"></span>
+        </div>
+    </form>
+    {% if tag_filter_applied %}
+    <div class="catalog-results-meta">
+        Найдено товаров: {{ products|length }}
+    </div>
+    {% endif %}
+    {% if products %}
+    <div class="products-preview" data-products-preview>
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product cart-actions1">
+                <a class="product-link" href="{% url 'product_detail' product.id %}"><img src="{{ product.image_url }}" alt="{{ product.title }}"></a>
+                <h3><a class="product-link" href="{% url 'product_detail' product.id %}">{{ product.title }}</a></h3>
+                <p class="product-status {% if product.is_active %}product-status--ok{% else %}product-status--bad{% endif %}">{% if product.is_active %}В наличии{% else %}Не в наличии{% endif %}</p>
+                <p>Цена: {{ product.price }} руб.</p>
+                {% if not user_is_admin %}
+                <form action="{% url 'add_to_cart' product.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Добавить в корзину</button>
+                </form>
+                {% else %}
+                <form action="{% url 'edit_product' product.id %}" method="get">
+                    <button type="submit">Редактировать</button>
+                </form>
+                <br>
+                <form action="{% url 'delete_product' product.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Удалить товар</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="products-more">
+        <button type="button" class="products-more-button" data-products-toggle>Показать весь товар</button>
+    </div>
+    {% else %}
+    <div class="catalog-empty-state">
+        <p>По выбранным параметрам товары не найдены. Попробуйте расширить диапазон цены или снять часть тегов.</p>
+    </div>
+    {% endif %}
+</section>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const tagsList = document.querySelector('[data-tags-list]');
+        const tagsToggle = document.querySelector('[data-tags-toggle]');
+
+        if (tagsList && tagsToggle) {
+            const applyTagsState = () => {
+                tagsList.classList.remove('catalog-tags-list--collapsed');
+                tagsToggle.hidden = true;
+                const singleRowHeight = Math.round(tagsList.firstElementChild?.offsetHeight || 42);
+                const rows = [];
+                Array.from(tagsList.children).forEach((item) => {
+                    const top = Math.round(item.offsetTop);
+                    if (!rows.includes(top)) {
+                        rows.push(top);
+                    }
+                });
+                if (rows.length > 1) {
+                    tagsList.classList.add('catalog-tags-list--collapsed');
+                    tagsList.style.setProperty('--collapsed-tags-height', `${singleRowHeight}px`);
+                    tagsToggle.hidden = false;
+                    if (!tagsList.classList.contains('catalog-tags-list--expanded')) {
+                        tagsToggle.textContent = 'Показать все теги';
+                    }
+                } else {
+                    tagsList.style.removeProperty('--collapsed-tags-height');
+                    tagsList.classList.remove('catalog-tags-list--expanded');
+                }
+            };
+
+            window.requestAnimationFrame(applyTagsState);
+            window.addEventListener('resize', applyTagsState);
+            tagsToggle.addEventListener('click', () => {
+                const expanded = tagsList.classList.toggle('catalog-tags-list--expanded');
+                tagsToggle.textContent = expanded ? 'Скрыть теги' : 'Показать все теги';
+            });
+        }
+
+        const preview = document.querySelector('[data-products-preview]');
+        const button = document.querySelector('[data-products-toggle]');
+        if (!preview || !button) {
+            return;
+        }
+
+        const cards = Array.from(preview.querySelectorAll('.product'));
+
+        const collapsePreview = () => {
+            preview.classList.remove('products-preview--expanded');
+            button.textContent = 'Показать весь товар';
+        };
+
+        const applyRowVisibility = () => {
+            if (!cards.length) {
+                return false;
+            }
+
+            cards.forEach((card) => card.classList.remove('product-hidden-row'));
+
+            const tops = [];
+            cards.forEach((card) => {
+                const top = Math.round(card.offsetTop);
+                if (!tops.includes(top)) {
+                    tops.push(top);
+                }
+            });
+
+            if (tops.length <= 5) {
+                return false;
+            }
+
+            const allowedTops = tops.slice(0, 5);
+            cards.forEach((card) => {
+                if (!allowedTops.includes(Math.round(card.offsetTop))) {
+                    card.classList.add('product-hidden-row');
+                }
+            });
+            return true;
+        };
+
+        const updateButtonVisibility = () => {
+            const shouldToggle = applyRowVisibility();
+            button.hidden = !shouldToggle;
+            if (!shouldToggle) {
+                preview.classList.add('products-preview--expanded');
+            } else if (!preview.classList.contains('products-preview--expanded')) {
+                collapsePreview();
+            }
+        };
+
+        collapsePreview();
+        window.requestAnimationFrame(updateButtonVisibility);
+        window.addEventListener('resize', updateButtonVisibility);
+
+        button.addEventListener('click', () => {
+            const expanded = preview.classList.toggle('products-preview--expanded');
+            cards.forEach((card) => card.classList.toggle('product-hidden-row', !expanded && card.classList.contains('product-hidden-row')));
+            if (expanded) {
+                cards.forEach((card) => card.classList.remove('product-hidden-row'));
+            } else {
+                applyRowVisibility();
+            }
+            button.textContent = expanded ? 'Свернуть каталог' : 'Показать весь товар';
+        });
+    });
+</script>
+
+<section id="contact" class="contact-section">
+        <h2>Контакты</h2>
+    <form class="contact-form">
+        <label for="name">Имя:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="message">Сообщение:</label>
+        <textarea id="message" name="message" required></textarea>
+
+        <button type="submit">Отправить</button>
+    </form>
+</section>
+{% endblock %}

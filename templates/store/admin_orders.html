@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Заказы</title>
+{% endblock %}
+
+{% block body %}
+<section class="admin-orders-page">
+    <div class="admin-orders-shell">
+        <div class="admin-orders-header">
+            <h1>История заказов</h1>
+            <p>Здесь собраны все заказы пользователей. Можно быстро открыть карточку заказа, посмотреть состав и изменить статус для клиента.</p>
+        </div>
+        {% if orders %}
+        <div class="admin-orders-list">
+            {% for order in orders %}
+            <article class="admin-order-card">
+                <div class="admin-order-card__top">
+                    <div>
+                        <h2>Заказ №{{ order.id }}</h2>
+                        <p class="admin-order-meta">{{ order.created_at|date:"d.m.Y H:i" }} · {{ order.user.username }}</p>
+                    </div>
+                    <span class="admin-order-status admin-order-status--{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+                <div class="admin-order-card__body">
+                    <p><strong>Получатель:</strong> {{ order.full_name }}</p>
+                    <p><strong>Телефон:</strong> {{ order.phone }}</p>
+                    <p><strong>Оплата:</strong> {{ order.get_payment_method_display }}</p>
+                    <p><strong>Товаров:</strong> {{ order.items.count }} · <strong>Сумма:</strong> {{ order.total_price }} руб.</p>
+                </div>
+                <div class="admin-order-card__actions cart-actions1">
+                    <a href="{% url 'admin_order_detail' order.id %}"><button type="button">Открыть заказ</button></a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="catalog-empty-state">
+            <p>Заказов пока нет.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

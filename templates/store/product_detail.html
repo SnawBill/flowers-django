@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}<title>{{ product.title }}</title>{% endblock %}
+{% block body %}
+<nav>
+    <ul>
+        <li><a href="{% url 'index' %}">Главная</a></li>
+        <li><a href="#gallery">Галерея</a></li>
+        <li><a href="#details">Описание</a></li>
+        <li><a href="#related">Похожие</a></li>
+        <li><a href="#delivery">Доставка</a></li>
+    </ul>
+</nav>
+<section id="gallery" class="product-panel product-gallery-panel">
+    <h2>{{ product.title }}</h2>
+    <div class="gallery-shell">
+        <button type="button" class="gallery-arrow gallery-arrow-left" aria-label="Предыдущее фото" data-gallery-prev></button>
+        <div class="gallery-stage">
+            <img class="gallery-image" data-gallery-image src="{{ gallery_images|first }}" alt="{{ product.title }}">
+            <div class="gallery-counter" data-gallery-counter>1 / {{ gallery_images|length }}</div>
+        </div>
+        <button type="button" class="gallery-arrow gallery-arrow-right" aria-label="Следующее фото" data-gallery-next></button>
+    </div>
+    <div class="product-gallery-meta">
+        <div class="product-gallery-price">{{ product.price }} руб.</div>
+        <p class="product-gallery-status {% if product.is_active %}product-gallery-status--ok{% else %}product-gallery-status--bad{% endif %}">
+            {% if product.is_active %}В наличии{% else %}Не в наличии{% endif %}
+        </p>
+        <p class="product-gallery-description">{{ product.description|default:"Авторский букет для особого повода. Подходит для подарка, праздника или украшения интерьера." }}</p>
+        {% if product_tags %}
+        <div class="tag-list tag-list-detail tag-list-gallery">
+            {% for tag in product_tags %}
+            <span class="tag-chip">{{ tag.name }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if not user_is_admin %}
+        <form action="{% url 'add_to_cart' product.id %}" method="post" class="product-gallery-form">
+            {% csrf_token %}
+            <button type="submit" class="product-action-button">Добавить в корзину</button>
+        </form>
+        {% else %}
+        <div class="product-admin-actions product-gallery-admin-actions">
+            <form action="{% url 'edit_product' product.id %}" method="get">
+                <button type="submit" class="product-action-button">Редактировать</button>
+            </form>
+            <form action="{% url 'delete_product' product.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="remove-button1">Удалить товар</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    {{ gallery_images|json_script:"gallery-images-data" }}
+</section>
+
+<section id="details" class="product-panel product-panel-centered">
+    <h2>Описание</h2>
+    <div class="info-cards">
+        <div class="info-card">
+            <h3>Состав</h3>
+            <p>Свежие сезонные цветы, подобранные в мягкой праздничной гамме.</p>
+        </div>
+        <div class="info-card">
+            <h3>Уход</h3>
+            <p>Подрежьте стебли, меняйте воду каждые 1-2 дня и держите букет подальше от солнца.</p>
+        </div>
+        <div class="info-card">
+            <h3>Упаковка</h3>
+            <p>Аккуратная фирменная упаковка с лентой и защитой для транспортировки.</p>
+        </div>
+    </div>
+</section>
+
+<section id="delivery" class="product-panel product-panel-centered">
+    <h2>Доставка</h2>
+    <div class="info-card product-delivery-card">
+        <p>Доставляем букеты по городу. Перед отправкой согласуем детали и можем добавить открытку к заказу.</p>
+    </div>
+</section>
+
+<section id="related" class="product-panel">
+    <h2>Похожие букеты</h2>
+    <div class="products-grid related-grid">
+        {% for item in related_products %}
+        <div class="product cart-actions1">
+            <a class="product-link" href="{% url 'product_detail' item.id %}"><img src="{{ item.image_url }}" alt="{{ item.title }}"></a>
+            <h3><a class="product-link" href="{% url 'product_detail' item.id %}">{{ item.title }}</a></h3>
+            <p>Цена: {{ item.price }} руб.</p>
+            {% if not user_is_admin %}
+            <form action="{% url 'add_to_cart' item.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Добавить в корзину</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const dataNode = document.getElementById('gallery-images-data');
+        const image = document.querySelector('[data-gallery-image]');
+        const counter = document.querySelector('[data-gallery-counter]');
+        const prev = document.querySelector('[data-gallery-prev]');
+        const next = document.querySelector('[data-gallery-next]');
+
+        if (!dataNode || !image || !counter || !prev || !next) {
+            return;
+        }
+
+        const images = JSON.parse(dataNode.textContent || '[]');
+        if (images.length <= 1) {
+            prev.disabled = true;
+            next.disabled = true;
+            return;
+        }
+
+        let index = 0;
+        let switchTimer = null;
+
+        const render = () => {
+            image.classList.add('gallery-image--switch');
+            window.clearTimeout(switchTimer);
+            switchTimer = window.setTimeout(() => {
+                image.src = images[index];
+                counter.textContent = `${index + 1} / ${images.length}`;
+                image.classList.remove('gallery-image--switch');
+            }, 180);
+        };
+
+        prev.addEventListener('click', () => {
+            index = (index - 1 + images.length) % images.length;
+            render();
+        });
+
+        next.addEventListener('click', () => {
+            index = (index + 1) % images.length;
+            render();
+        });
+    });
+</script>
+{% endblock %}

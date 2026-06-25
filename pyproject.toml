@@ -1,0 +1,10 @@
+[project]
+name = "flowers-django"
+version = "0.1.0"
+description = "Flower shop site rewritten in Django"
+requires-python = ">=3.10"
+dependencies = [
+    "Django>=5.1,<6.0",
+    "psycopg[binary]>=3.2,<4",
+]
+

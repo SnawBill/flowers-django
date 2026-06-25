@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Корзина</title>
+{% endblock %}
+
+{% block body %}
+<section class="cart-page">
+    <div class="cart-page-header">
+        <h1>Ваш заказ</h1>
+        <p>Проверьте состав, количество товаров и итоговую сумму перед переходом к оплате.</p>
+    </div>
+    <div class="cart-container1">
+        {% if cart_items|length == 0 %}
+        <div class="catalog-empty-state cart-empty-card">
+            <h2 class="empty-cart-message1">В данный момент ваша корзина пуста</h2>
+            <p>Добавьте букет из каталога, и он сразу появится здесь.</p>
+        </div>
+        {% else %}
+        <table class="cart-table1">
+            <tr>
+                <th>Изображение</th>
+                <th>Название</th>
+                <th>Цена за 1шт.</th>
+                <th>Количество</th>
+                <th>Действия</th>
+            </tr>
+            {% for item in cart_items %}
+            <tr>
+                <td>
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.title }}" class="cart-image1">
+                </td>
+                <td>{{ item.product.title }}</td>
+                <td>{{ item.product.price }}</td>
+                <td>
+                    <div class="cart-qty-actions">
+                        <form action="{% url 'decrease_cart_item' item.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="qty-button">-</button>
+                        </form>
+                        <span class="cart-qty-value">{{ item.quantity }}</span>
+                        <form action="{% url 'increase_cart_item' item.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="qty-button">+</button>
+                        </form>
+                    </div>
+                </td>
+                <td>
+                    <form action="{% url 'remove_from_cart' item.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="remove-button1">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <div class="cart-summary">
+            <h2>Итоговая сумма: {{ total_price }} руб.</h2>
+            <a href="{% url 'checkout' %}" class="checkout-button1">Оплатить товар</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

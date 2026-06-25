@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}<title>Авторизация</title>{% endblock %}
+{% block body %}
+<section class="auth-page">
+    <div class="auth-shell">
+        <form class="login auth-card" action="" method="post" novalidate>
+            {% csrf_token %}
+            <div class="page-eyebrow">Добро пожаловать</div>
+            <h2>Вход</h2>
+            <p class="auth-subtitle">Войдите, чтобы оформлять заказы, управлять корзиной и отслеживать покупки.</p>
+            <p>
+                {{ form.username.label_tag }}<br>
+                {{ form.username }}
+                {% for error in form.username.errors %}
+                <span class="form-error-inline">Введите ваше имя</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.password.label_tag }}<br>
+                {{ form.password }}
+                {% for error in form.password.errors %}
+                <span class="form-error-inline">Введите пароль</span>
+                {% endfor %}
+            </p>
+            <p><button type="submit">Войти</button></p>
+        </form>
+        <div class="auth-aside-card">
+            <div class="page-eyebrow">Быстрый старт</div>
+            <h3>Еще нет аккаунта?</h3>
+            <p>Создайте профиль, чтобы быстрее оформлять доставку, сохранять контактные данные и возвращаться к любимым букетам.</p>
+            <a class="text-link-button" href="{% url 'register' %}">Перейти к регистрации</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}<title>Профиль</title>{% endblock %}
+{% block body %}
+<section class="profile-page">
+    <div class="profile-card profile-card--wide">
+        <div class="profile-hero">
+            <div class="profile-avatar">{{ user_profile.username|first|upper }}</div>
+            <div class="profile-hero-copy">
+                <h1>{{ user_profile.username }}</h1>
+                <p>{{ user_profile.email }}</p>
+            </div>
+        </div>
+        <div class="details profile-details-grid">
+            <p><span>Имя:</span> {{ profile.first_name|default:'-' }}</p>
+            <p><span>Фамилия:</span> {{ profile.last_name|default:'-' }}</p>
+            <p><span>Номер:</span> {{ profile.phone|default:'-' }}</p>
+            <p><span>Адрес:</span> {{ profile.address|default:'-' }}</p>
+        </div>
+        <div class="cart-actions1 centr profile-actions">
+            <a href="{% url 'profile_edit' %}"><button type="button">Редактировать профиль</button></a>
+        </div>
+    </div>
+</section>
+{% endblock %}

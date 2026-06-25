@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Оформление заказа</title>
+{% endblock %}
+
+{% block body %}
+<section class="checkout-page">
+    <div class="checkout-layout">
+        <div class="checkout-form-card">
+            <h1>Оформление заказа</h1>
+            <p class="checkout-intro">Заполните данные для доставки и перейдите к оплате. Заказ будет создан в системе, а корзина очистится только после успешного подтверждения платежа.</p>
+            {% if yookassa_simulation %}<p class="checkout-demo-badge">Сейчас включена локальная тестовая симуляция ЮKassa. После оформления откроется учебная страница оплаты.</p>{% endif %}
+            <form method="post" class="checkout-form">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="checkout-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="checkout-field-errors">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="checkout-submit">Перейти к оплате</button>
+            </form>
+        </div>
+        <aside class="checkout-summary-card">
+            <h2>Ваш заказ</h2>
+            <div class="checkout-summary-list">
+                {% for item in cart_items %}
+                <div class="checkout-summary-item">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.title }}">
+                    <div>
+                        <h3>{{ item.product.title }}</h3>
+                        <p>{{ item.quantity }} x {{ item.product.price }} руб.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="checkout-total">Итого к оплате: <strong>{{ total_price }} руб.</strong></div>
+            <p class="checkout-note">Если позже добавить тестовые ключи ЮKassa в переменные окружения, эта же форма сможет отправлять пользователя уже в настоящий тестовый checkout ЮKassa.</p>
+        </aside>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}<title>Регистрация</title>{% endblock %}
+{% block body %}
+<section class="auth-page">
+    <div class="auth-shell auth-shell--single">
+        <form class="login auth-card" action="" method="post" novalidate>
+            {% csrf_token %}
+            <h2>Создать аккаунт</h2>
+            <p class="auth-subtitle">После регистрации вы сможете оформлять заказы быстрее и хранить данные доставки в профиле.</p>
+            <p>
+                {{ form.username.label_tag }}<br>
+                {{ form.username }}
+                {% for error in form.username.errors %}
+                <span class="form-error-inline">{{ error }}</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.email.label_tag }}<br>
+                {{ form.email }}
+                {% for error in form.email.errors %}
+                <span class="form-error-inline">{{ error }}</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.password1.label_tag }}<br>
+                {{ form.password1 }}
+                {% for error in form.password1.errors %}
+                <span class="form-error-inline">{{ error }}</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.password2.label_tag }}<br>
+                {{ form.password2 }}
+                {% for error in form.password2.errors %}
+                <span class="form-error-inline">{{ error }}</span>
+                {% endfor %}
+            </p>
+            <p><button type="submit">Зарегистрироваться</button></p>
+            <p class="auth-footer-note">Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+        </form>
+    </div>
+</section>
+{% endblock %}

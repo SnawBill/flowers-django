@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Редактирование товара</title>
+{% endblock %}
+
+{% block body %}
+<section class="form-page">
+    <form class='login form-card form-card--wide' action="" method="post" novalidate>
+        {% csrf_token %}
+        <h1>Редактирование товара</h1>
+        <p class="auth-subtitle">Обновите описание, цену, теги и галерею, чтобы карточка товара выглядела целостно.</p>
+        <p>
+            {{ form.title.label_tag }}<br>
+            {{ form.title }}
+            {{ form.title.errors }}
+        </p>
+        <p>
+            {{ form.price.label_tag }}<br>
+            {{ form.price }}
+            {{ form.price.errors }}
+        </p>
+        <p>
+            {{ form.description.label_tag }}<br>
+            {{ form.description }}
+            {{ form.description.errors }}
+        </p>
+        <p>
+            {{ form.tags_text.label_tag }}<br>
+            {{ form.tags_text }}
+            {{ form.tags_text.errors }}
+        </p>
+        <p>
+            {{ form.image_url.label_tag }}<br>
+            {{ form.image_url }}
+            {{ form.image_url.errors }}
+        </p>
+        <p>
+            {{ form.gallery_text.label_tag }}<br>
+            {{ form.gallery_text }}
+            {{ form.gallery_text.errors }}
+        </p>
+        <p class="form-checkbox-row">
+            {{ form.is_active }} {{ form.is_active.label_tag }}
+        </p>
+        <p><button type="submit">Сохранить</button></p>
+    </form>
+</section>
+{% endblock %}

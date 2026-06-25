@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Заказ №{{ order.id }}</title>
+{% endblock %}
+
+{% block body %}
+<section class="admin-orders-page">
+    <div class="admin-order-detail-layout">
+        <div class="admin-order-detail-card">
+            <div class="admin-orders-header admin-orders-header--left">
+                <h1>Заказ №{{ order.id }}</h1>
+                <p>Оформлен {{ order.created_at|date:"d.m.Y H:i" }} пользователем {{ order.user.username }}.</p>
+            </div>
+            <div class="admin-order-grid">
+                <div class="admin-order-info-block">
+                    <h2>Данные клиента</h2>
+                    <p><strong>Получатель:</strong> {{ order.full_name }}</p>
+                    <p><strong>Email:</strong> {{ order.email|default:'-' }}</p>
+                    <p><strong>Телефон:</strong> {{ order.phone }}</p>
+                    <p><strong>Адрес:</strong> {{ order.address }}</p>
+                    <p><strong>Комментарий:</strong> {{ order.comment|default:'-' }}</p>
+                </div>
+                <div class="admin-order-info-block">
+                    <h2>Состояние заказа</h2>
+                    <p><strong>Текущий статус:</strong> <span class="admin-order-status admin-order-status--{{ order.status }}">{{ order.get_status_display }}</span></p>
+                    <p><strong>Способ оплаты:</strong> {{ order.get_payment_method_display }}</p>
+                    <p><strong>Сумма:</strong> {{ order.total_price }} руб.</p>
+                    <p><strong>Внешний ID платежа:</strong> {{ order.provider_payment_id|default:'-' }}</p>
+                    <p><strong>Оплачен:</strong> {% if order.paid_at %}{{ order.paid_at|date:"d.m.Y H:i" }}{% else %}-{% endif %}</p>
+                    <p><strong>Завершен:</strong> {% if order.completed_at %}{{ order.completed_at|date:"d.m.Y H:i" }}{% else %}-{% endif %}</p>
+                </div>
+            </div>
+            <div class="admin-order-status-form-wrap">
+                <h2>Изменить статус</h2>
+                <form method="post" class="admin-order-status-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_status">
+                    <select name="status">
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit">Сохранить статус</button>
+                </form>
+                {% if order.status != 'completed' %}
+                <form method="post" class="admin-order-complete-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="complete_order">
+                    <button type="submit" class="admin-order-complete-button">Завершить заказ</button>
+                </form>
+                <p class="admin-order-complete-note">Используй эту кнопку, когда клиент уже получил товар и заказ можно окончательно закрыть.</p>
+                {% endif %}
+            </div>
+        </div>
+        <aside class="admin-order-items-card">
+            <h2>Состав заказа</h2>
+            <div class="admin-order-items-list">
+                {% for item in order.items.all %}
+                <div class="admin-order-item">
+                    <img src="{{ item.image_url }}" alt="{{ item.product_title }}">
+                    <div>
+                        <h3>{{ item.product_title }}</h3>
+                        <p>{{ item.quantity }} x {{ item.price }} руб.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="admin-order-total">Итого: <strong>{{ order.total_price }} руб.</strong></div>
+            <div class="cart-actions1 admin-order-back">
+                <a href="{% url 'admin_orders' %}"><button type="button">Назад к заказам</button></a>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}
