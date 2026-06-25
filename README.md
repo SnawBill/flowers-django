@@ -2,6 +2,35 @@
 
 Интернет-магазин цветочных букетов на Django с каталогом товаров, корзиной, оформлением заказа, профилем пользователя и административным управлением товарами и заказами.
 
+## Скриншоты
+
+После добавления изображений в `docs/screenshots/` они будут отображаться здесь.
+
+Рекомендуемые имена файлов:
+
+- `home.png` — главная страница
+- `product.png` — страница товара
+- `cart.png` — корзина или оформление заказа
+- `admin-orders.png` — страница заказов администратора
+
+Markdown для вставки изображений:
+
+```md
+![Главная страница](docs/screenshots/home.png)
+![Страница товара](docs/screenshots/product.png)
+![Корзина](docs/screenshots/cart.png)
+![Заказы администратора](docs/screenshots/admin-orders.png)
+```
+
+Если положишь файлы именно с этими именами, просто замени этот блок на:
+
+```md
+![Главная страница](docs/screenshots/home.png)
+![Страница товара](docs/screenshots/product.png)
+![Корзина](docs/screenshots/cart.png)
+![Заказы администратора](docs/screenshots/admin-orders.png)
+```
+
 ## Возможности
 
 - регистрация, вход и выход пользователей
@@ -84,6 +113,7 @@ uv run python manage.py runserver
 
 ```text
 flowers_django/
+├── docs/screenshots/  # скриншоты для README
 ├── flowers_django/    # настройки проекта, маршруты, ASGI/WSGI
 ├── store/             # логика магазина: модели, views, формы, сигналы
 ├── static/            # стили, иконки, скрипты
