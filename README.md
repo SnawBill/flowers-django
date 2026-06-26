@@ -9,6 +9,10 @@ uv sync
 cp .env.example .env
 ```
 
+
+
+
+
 Создай пользователя и базу PostgreSQL:
 
 ```bash
@@ -19,6 +23,10 @@ sudo -u postgres psql
 CREATE USER "user" WITH PASSWORD 'password';
 CREATE DATABASE flower_shop OWNER "user";
 GRANT ALL PRIVILEGES ON DATABASE flower_shop TO "user";
+
+    .env --->
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/flower_shop
+
 \q
 ```
 
