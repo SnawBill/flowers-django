@@ -10,7 +10,7 @@
         <div class="checkout-form-card">
             <h1>Оформление заказа</h1>
             <p class="checkout-intro">Заполните данные для доставки и перейдите к оплате. Заказ будет создан в системе, а корзина очистится только после успешного подтверждения платежа.</p>
-            {% if yookassa_simulation %}<p class="checkout-demo-badge">Сейчас включена локальная тестовая симуляция ЮKassa. После оформления откроется учебная страница оплаты.</p>{% endif %}
+            <!--{% if yookassa_simulation %}<p class="checkout-demo-badge">Сейчас включена локальная тестовая симуляция ЮKassa. После оформления откроется учебная страница оплаты.</p>{% endif %}-->
             <form method="post" class="checkout-form">
                 {% csrf_token %}
                 {% for field in form %}
@@ -39,7 +39,7 @@
                 {% endfor %}
             </div>
             <div class="checkout-total">Итого к оплате: <strong>{{ total_price }} руб.</strong></div>
-            <p class="checkout-note">Если позже добавить тестовые ключи ЮKassa в переменные окружения, эта же форма сможет отправлять пользователя уже в настоящий тестовый checkout ЮKassa.</p>
+            <!--<p class="checkout-note">Если позже добавить тестовые ключи ЮKassa в переменные окружения, эта же форма сможет отправлять пользователя уже в настоящий тестовый checkout ЮKassa.</p>-->
         </aside>
     </div>
 </section>
