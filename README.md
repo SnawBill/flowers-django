@@ -1,7 +1,5 @@
 # Flowers Django
 
-Django-магазин букетов с PostgreSQL.
-
 ## Запуск
 
 ```bash
@@ -11,7 +9,7 @@ uv sync
 cp .env.example .env
 ```
 
-Создай базу PostgreSQL:
+Создай пользователя и базу PostgreSQL:
 
 ```bash
 sudo -u postgres psql
@@ -24,23 +22,20 @@ GRANT ALL PRIVILEGES ON DATABASE flower_shop TO "user";
 \q
 ```
 
-Примени миграции и загрузи товары из базы:
+Восстанови базу из дампа:
 
 ```bash
-uv run python manage.py migrate
-uv run python manage.py loaddata store/fixtures/catalog_data.json
-uv run python manage.py createsuperuser
+psql -h 127.0.0.1 -U user -d flower_shop < flowers_django_dump.sql
+```
+
+Запусти проект:
+
+```bash
 uv run python manage.py runserver
 ```
 
-## Что передается вместе с проектом
-
-- код проекта
-- структура базы через миграции
-- товары, теги и галерея в файле [catalog_data.json](/home/vlad/flowers_django/store/fixtures/catalog_data.json)
-
 ## Адреса
 
-- сайт: `http://127.0.0.1:8000`
-- админка: `http://127.0.0.1:8000/admin/`
-- заказы: `http://127.0.0.1:8000/admin/orders/`
+- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8000/admin/`
+- `http://127.0.0.1:8000/admin/orders/`
