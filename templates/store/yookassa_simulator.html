@@ -7,9 +7,8 @@
 {% block body %}
 <section class="yookassa-sim-page">
     <div class="yookassa-sim-card">
-        <div class="yookassa-sim-brand">ЮKassa Test</div>
-        <h1>Симуляция оплаты заказа №{{ order.id }}</h1>
-        <p class="yookassa-sim-text">Это учебная страница оплаты. Она имитирует поведение тестовой кассы: можно завершить оплату успешно, отменить ее или вернуть ошибку.</p>
+        <div class="yookassa-sim-brand">ЮKassa</div>
+        <h1>Оплата заказа</h1>
         <div class="yookassa-sim-total">К оплате: <strong>{{ order.total_price }} руб.</strong></div>
         <div class="yookassa-sim-items">
             {% for item in order.items.all %}
@@ -24,9 +23,9 @@
         </div>
         <form method="post" class="yookassa-sim-actions">
             {% csrf_token %}
-            <button type="submit" name="action" value="success" class="yookassa-sim-button yookassa-sim-button--success">Успешная оплата</button>
-            <button type="submit" name="action" value="cancel" class="yookassa-sim-button yookassa-sim-button--cancel">Отменить оплату</button>
-            <button type="submit" name="action" value="fail" class="yookassa-sim-button yookassa-sim-button--fail">Ошибка оплаты</button>
+            <button type="submit" name="action" value="success" class="yookassa-sim-button yookassa-sim-button--success">Оплатить</button>
+            <!--<button type="submit" name="action" value="cancel" class="yookassa-sim-button yookassa-sim-button--cancel">Отменить оплату</button>
+            <button type="submit" name="action" value="fail" class="yookassa-sim-button yookassa-sim-button--fail">Ошибка оплаты</button>-->
         </form>
     </div>
 </section>

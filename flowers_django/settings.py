@@ -4,6 +4,16 @@ from urllib.parse import urlparse
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = BASE_DIR / ".env"
+
+# Подхватываем локальный .env без дополнительных зависимостей.
+if ENV_FILE.exists():
+    for raw_line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip())
 
 # Для локальной разработки оставлены безопасные значения по умолчанию.
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")

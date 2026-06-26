@@ -1,3 +1,5 @@
+import os
+
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
@@ -8,7 +10,7 @@ from .models import CartItem, Product, ProductImage, Tag
 # После миграций один раз наполняем каталог демонстрационными товарами.
 @receiver(post_migrate)
 def seed_demo_products(sender, **kwargs):
-    if sender.name != "store":
+    if sender.name != "store" or os.getenv("SKIP_DEMO_SEED") == "1":
         return
 
     for item in DEMO_PRODUCTS:
