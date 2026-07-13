@@ -1,10 +1,25 @@
 from pathlib import Path
 import os
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
+
+from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = BASE_DIR / ".env"
+
+
+def env_bool(name, default=False):
+    """Read a boolean environment variable using common true values."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_list(name, default=""):
+    """Read a comma-separated environment variable as a clean list."""
+    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
 
 # Подхватываем локальный .env без дополнительных зависимостей.
 if ENV_FILE.exists():
@@ -17,8 +32,12 @@ if ENV_FILE.exists():
 
 # Для локальной разработки оставлены безопасные значения по умолчанию.
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
-DEBUG = os.getenv("DEBUG", "1") == "1"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+DEBUG = env_bool("DEBUG", True)
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "127.0.0.1,localhost")
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+
+if not DEBUG and SECRET_KEY == "dev-secret-key-change-me":
+    raise ImproperlyConfigured("Set a unique SECRET_KEY for production.")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -32,6 +51,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -69,13 +89,15 @@ if database_url:
         "default": {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": parsed.path.lstrip("/"),
-            "USER": parsed.username or "",
-            "PASSWORD": parsed.password or "",
+            "USER": unquote(parsed.username or ""),
+            "PASSWORD": unquote(parsed.password or ""),
             "HOST": parsed.hostname or "",
             "PORT": parsed.port or "5432",
         }
     }
 else:
+    if not DEBUG:
+        raise ImproperlyConfigured("DATABASE_URL is required for production.")
     # Локальный fallback, чтобы проект запускался даже без Postgres.
     DATABASES = {
         "default": {
@@ -98,6 +120,13 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "index"
@@ -112,3 +141,15 @@ YOOKASSA_SHOP_ID = os.getenv("YOOKASSA_SHOP_ID", "")
 YOOKASSA_SECRET_KEY = os.getenv("YOOKASSA_SECRET_KEY", "")
 YOOKASSA_SIMULATION = os.getenv("YOOKASSA_SIMULATION", "1") == "1"
 PAYMENT_BASE_URL = os.getenv("PAYMENT_BASE_URL", "")
+
+# Эти параметры включаются в production через .env после настройки HTTPS.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", False)
+    SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", False)
+    CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", False)
+    SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
+    SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
