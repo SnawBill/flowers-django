@@ -1,27 +1,32 @@
 <form id="contact-form" class="contact-form" action="{% url 'contacts' %}#contact-form" method="post">
     {% csrf_token %}
     {{ contact_form.website }}
+    <div class="contact-form__intro">
+        <h2>{{ contact_form_title|default:'Напишите нам' }}</h2>
+        <p>{{ contact_form_hint|default:'Опишите вопрос, и мы ответим на указанный email.' }}</p>
+        <span>Все поля обязательны для заполнения.</span>
+    </div>
     {% if contact_form.non_field_errors %}
     <div class="form-error-inline">{{ contact_form.non_field_errors }}</div>
     {% endif %}
     <div class="contact-form__grid">
         <div class="contact-form__field">
-            <label for="{{ contact_form.name.id_for_label }}">{{ contact_form.name.label }}</label>
+            <label for="{{ contact_form.name.id_for_label }}">{{ contact_form.name.label }} <span aria-hidden="true">*</span></label>
             {{ contact_form.name }}
             {{ contact_form.name.errors }}
         </div>
         <div class="contact-form__field">
-            <label for="{{ contact_form.email.id_for_label }}">{{ contact_form.email.label }}</label>
+            <label for="{{ contact_form.email.id_for_label }}">{{ contact_form.email.label }} <span aria-hidden="true">*</span></label>
             {{ contact_form.email }}
             {{ contact_form.email.errors }}
         </div>
         <div class="contact-form__field contact-form__field--wide">
-            <label for="{{ contact_form.subject.id_for_label }}">{{ contact_form.subject.label }}</label>
+            <label for="{{ contact_form.subject.id_for_label }}">{{ contact_form.subject.label }} <span aria-hidden="true">*</span></label>
             {{ contact_form.subject }}
             {{ contact_form.subject.errors }}
         </div>
         <div class="contact-form__field contact-form__field--wide">
-            <label for="{{ contact_form.message.id_for_label }}">{{ contact_form.message.label }}</label>
+            <label for="{{ contact_form.message.id_for_label }}">{{ contact_form.message.label }} <span aria-hidden="true">*</span></label>
             {{ contact_form.message }}
             {{ contact_form.message.errors }}
         </div>

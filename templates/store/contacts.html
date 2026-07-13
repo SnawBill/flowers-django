@@ -1,29 +1,30 @@
 {% extends 'base.html' %}
-{% block title %}Контакты{% endblock %}
+{% block title %}Контакты | Flower Atelier{% endblock %}
 {% block body %}
 <section class="legal-page">
-    <header class="legal-hero">
+    <div class="legal-hero">
         <span class="page-eyebrow">Связаться с нами</span>
         <h1>Контакты</h1>
         <p>Ответим на вопросы о букете, доставке, оплате или уже оформленном заказе.</p>
-    </header>
+    </div>
+    {% include 'store/_legal_nav.html' %}
     <div class="contact-page-layout">
-        {% include 'store/_contact_form.html' %}
+        {% include 'store/_contact_form.html' with contact_form_title='Отправить сообщение' contact_form_hint='Заполните форму, и мы ответим на указанный email.' %}
         <div class="contact-details-stack">
             <article class="legal-card">
                 <span class="legal-card__label">Электронная почта</span>
                 <h2><a href="mailto:{{ seller.email }}">{{ seller.email }}</a></h2>
-                <p>Для вопросов о заказах, оплате, возвратах и персональных данных.</p>
+                <p>Для вопросов о заказах, оплате, возвратах и обработке персональных данных.</p>
             </article>
             <article class="legal-card">
                 <span class="legal-card__label">Телефон</span>
                 <h2><a href="tel:{{ seller.phone_uri }}">{{ seller.phone }}</a></h2>
-                <p>Для оперативного согласования заказа и доставки.</p>
+                <p>Для оперативного согласования состава заказа и деталей доставки.</p>
             </article>
             <article class="legal-card">
                 <span class="legal-card__label">Адрес и территория работы</span>
                 <h2>{{ seller.address }}</h2>
-                <p>Доставка выполняется по городу {{ seller.city }}. Заказы принимаются онлайн.</p>
+                <p>Доставка выполняется по городу {{ seller.city }}. Онлайн-обращения принимаются круглосуточно.</p>
             </article>
         </div>
     </div>

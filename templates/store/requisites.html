@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}Реквизиты продавца{% endblock %}
+{% block title %}Реквизиты продавца | Flower Atelier{% endblock %}
 {% block body %}
 <section class="legal-page">
-    <header class="legal-hero">
+    <div class="legal-hero">
         <span class="page-eyebrow">Информация о продавце</span>
         <h1>Реквизиты</h1>
         <p>Сведения о лице, принимающем заказы и оплату на сайте.</p>
-    </header>
+    </div>
+    {% include 'store/_legal_nav.html' %}
     <div class="requisites-card">
         <dl class="requisites-list">
             <div><dt>Продавец</dt><dd>{{ seller.name }}</dd></div>

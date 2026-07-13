@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Flower Atelier{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=19">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20">
 </head>
 <body>
     <header>
@@ -19,19 +19,19 @@
         <div class="icons">
             {% if user.is_authenticated and user.is_staff %}
             <div class="admin-shortcuts">
-                <div class="cart-actions1"><a href="{% url 'create_product' %}"><button type="button">Добавить товар</button></a></div>
-                <div class="cart-actions1"><a href="{% url 'admin_orders' %}"><button type="button">Заказы</button></a></div>
+                <div class="cart-actions1"><a class="header-action" href="{% url 'create_product' %}">Добавить товар</a></div>
+                <div class="cart-actions1"><a class="header-action" href="{% url 'admin_orders' %}">Заказы</a></div>
             </div>
             {% endif %}
             {% if user.is_authenticated %}
-            <div class="cart-actions1"><a href="{% url 'logout' %}"><button type="button">Выйти</button></a></div>
+            <div class="cart-actions1"><a class="header-action" href="{% url 'logout' %}">Выйти</a></div>
             <a class="icon-link" href="{% url 'profile' %}" aria-label="Профиль">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 12a4.25 4.25 0 1 0-4.25-4.25A4.25 4.25 0 0 0 12 12Zm0 2.25c-4.03 0-7.25 2.15-7.25 4.8 0 .39.31.7.7.7h13.1a.7.7 0 0 0 .7-.7c0-2.65-3.22-4.8-7.25-4.8Z" fill="currentColor"/>
                 </svg>
             </a>
             {% else %}
-            <div class="cart-actions1"><a href="{% url 'login' %}"><button type="button">Войти</button></a></div>
+            <div class="cart-actions1"><a class="header-action" href="{% url 'login' %}">Войти</a></div>
             {% endif %}
             <a class="icon-link icon-link--cart" href="{% url 'cart' %}" aria-label="Корзина">
                 <svg viewBox="0 0 24 24" aria-hidden="true">

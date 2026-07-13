@@ -1,0 +1,7 @@
+<nav class="legal-nav" aria-label="Информация о магазине">
+    <a href="{% url 'contacts' %}" {% if request.resolver_match.url_name == 'contacts' %}class="is-active" aria-current="page"{% endif %}>Контакты</a>
+    <a href="{% url 'delivery' %}" {% if request.resolver_match.url_name == 'delivery' %}class="is-active" aria-current="page"{% endif %}>Доставка и возврат</a>
+    <a href="{% url 'offer' %}" {% if request.resolver_match.url_name == 'offer' %}class="is-active" aria-current="page"{% endif %}>Оферта</a>
+    <a href="{% url 'privacy' %}" {% if request.resolver_match.url_name == 'privacy' %}class="is-active" aria-current="page"{% endif %}>Персональные данные</a>
+    <a href="{% url 'requisites' %}" {% if request.resolver_match.url_name == 'requisites' %}class="is-active" aria-current="page"{% endif %}>Реквизиты</a>
+</nav>

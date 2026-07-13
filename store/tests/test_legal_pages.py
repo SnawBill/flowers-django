@@ -31,6 +31,16 @@ class LegalPagesTests(TestCase):
                 response = self.client.get(reverse(route_name))
                 self.assertEqual(response.status_code, 200)
 
+    def test_information_pages_share_navigation_and_safe_hero_markup(self):
+        route_names = ("contacts", "delivery", "offer", "privacy", "requisites")
+        for route_name in route_names:
+            with self.subTest(route_name=route_name):
+                response = self.client.get(reverse(route_name))
+                for target_name in route_names:
+                    self.assertContains(response, reverse(target_name))
+                self.assertNotContains(response, '<header class="legal-hero">', html=False)
+                self.assertContains(response, '<div class="legal-hero">', html=False)
+
     def test_requisites_page_contains_seller_information(self):
         response = self.client.get(reverse("requisites"))
 
@@ -54,6 +64,7 @@ class LegalPagesTests(TestCase):
         self.assertContains(response, "+7 900 000-00-00")
         self.assertContains(response, "seller@example.com")
         self.assertContains(response, "г. Уссурийск, ул. Тестовая, д. 1")
+        self.assertContains(response, "Все поля обязательны для заполнения.")
 
     def test_business_contacts_are_not_duplicated_on_homepage(self):
         response = self.client.get(reverse("index"))
