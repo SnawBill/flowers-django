@@ -10,9 +10,10 @@ cd flowers-django
 cp .env.example .env
 ```
 
-В `.env` замени `SECRET_KEY`, пароль PostgreSQL, домен в `ALLOWED_HOSTS`,
-`CSRF_TRUSTED_ORIGINS` и `PAYMENT_BASE_URL`. Пароль в `POSTGRES_PASSWORD`
-должен совпадать с паролем внутри `DATABASE_URL`.
+В `.env` замени `SECRET_KEY`, пароль PostgreSQL и `example.com` на свой домен.
+Пароль в `POSTGRES_PASSWORD` должен совпадать с паролем внутри `DATABASE_URL`.
+DNS-записи домена должны указывать на IP сервера, а порты `80` и `443` должны
+быть открыты.
 
 Для симуляции оплаты оставь `YOOKASSA_SIMULATION=1`. Для реальных платежей
 укажи ключи ЮKassa и установи `YOOKASSA_SIMULATION=0`.
@@ -21,7 +22,8 @@ cp .env.example .env
 docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-Сайт откроется по IP-адресу сервера. При первом запуске PostgreSQL автоматически
+Сайт откроется по HTTPS на домене из `DOMAIN`. Caddy автоматически выпустит и
+будет продлевать TLS-сертификат. При первом запуске PostgreSQL автоматически
 восстановит товары и остальные данные из `flowers_django_dump.sql`.
 
 Создание нового администратора:
@@ -42,13 +44,4 @@ docker compose -f docker-compose.prod.yml logs -f
 ```bash
 docker compose -f docker-compose.prod.yml down -v
 docker compose -f docker-compose.prod.yml up --build -d
-```
-
-После настройки HTTPS у хостинг-провайдера или во внешнем reverse proxy укажи в `.env`:
-
-```env
-SECURE_SSL_REDIRECT=1
-SESSION_COOKIE_SECURE=1
-CSRF_COOKIE_SECURE=1
-SECURE_HSTS_SECONDS=31536000
 ```
