@@ -16,6 +16,7 @@ def site_information(request):
             "phone_uri": f"+{phone_digits}" if phone_digits else "",
             "email": settings.SELLER_EMAIL,
             "city": settings.SELLER_CITY,
+            "address": settings.SELLER_ADDRESS,
         },
         "delivery": {
             "price": settings.DELIVERY_PRICE,

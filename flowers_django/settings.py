@@ -152,6 +152,7 @@ SELLER_INN = os.getenv("SELLER_INN", "")
 SELLER_PHONE = os.getenv("SELLER_PHONE", "")
 SELLER_EMAIL = os.getenv("SELLER_EMAIL", "")
 SELLER_CITY = os.getenv("SELLER_CITY", "")
+SELLER_ADDRESS = os.getenv("SELLER_ADDRESS", SELLER_CITY)
 DELIVERY_PRICE = os.getenv("DELIVERY_PRICE", "500")
 DELIVERY_TIME = os.getenv("DELIVERY_TIME", "до 2 часов")
 
