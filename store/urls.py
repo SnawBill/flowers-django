@@ -6,6 +6,11 @@ from . import views
 # Публичные маршруты магазина, корзины, профиля и каталога.
 urlpatterns = [
     path("", views.index, name="index"),
+    path("contacts/", views.contacts_view, name="contacts"),
+    path("delivery/", views.delivery_view, name="delivery"),
+    path("offer/", views.offer_view, name="offer"),
+    path("privacy/", views.privacy_view, name="privacy"),
+    path("requisites/", views.requisites_view, name="requisites"),
     path("register/", views.register_view, name="register"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),

@@ -36,6 +36,7 @@
                 {% endfor %}
             </p>
             <p><button type="submit">Зарегистрироваться</button></p>
+            <p class="form-legal-note">Регистрируясь, вы принимаете <a href="{% url 'privacy' %}">политику обработки персональных данных</a>.</p>
             <p class="auth-footer-note">Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
         </form>
     </div>

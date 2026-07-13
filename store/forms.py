@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -86,6 +87,15 @@ class ProfileForm(forms.ModelForm):
 
 # Финальная форма оформления заказа перед оплатой.
 class CheckoutForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if settings.YOOKASSA_TEST_MODE:
+            self.fields["payment_method"].choices = [
+                choice
+                for choice in Order.PAYMENT_METHOD_CHOICES
+                if choice[0] != Order.PAYMENT_METHOD_SBP
+            ]
+
     class Meta:
         model = Order
         fields = ("full_name", "phone", "address", "email", "payment_method", "comment")

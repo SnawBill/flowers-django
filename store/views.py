@@ -1,10 +1,7 @@
-import base64
 import json
+import logging
 import re
-import uuid
 from datetime import timedelta
-from urllib import error as urllib_error
-from urllib import request as urllib_request
 
 from django.conf import settings
 from django.contrib import messages
@@ -20,6 +17,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .forms import CheckoutForm, ProductForm, ProfileForm, RegistrationForm
 from .models import CartItem, Order, OrderItem, Product, ProductImage, Profile, Tag
+from .payments import YooKassaError, create_payment, fetch_payment, validate_payment, yookassa_enabled
+
+
+logger = logging.getLogger(__name__)
 
 
 # Единая проверка прав администратора для шаблонов и views.
@@ -66,7 +67,7 @@ def _build_absolute_url(request, route_name, **kwargs):
 
 # Помечаем заказ как оплаченный и очищаем корзину пользователя.
 def _mark_order_paid(order):
-    if order.status == Order.STATUS_PAID:
+    if order.status in {Order.STATUS_PAID, Order.STATUS_COMPLETED}:
         return
     order.status = Order.STATUS_PAID
     order.paid_at = timezone.now()
@@ -110,65 +111,14 @@ def _visible_orders_queryset():
     )
 
 
-# Реальная интеграция включается только при наличии shop id и secret key.
-def _yookassa_enabled():
-    return bool(settings.YOOKASSA_SHOP_ID and settings.YOOKASSA_SECRET_KEY)
-
-
-# Создаем платеж в ЮKassa и возвращаем ответ API.
-def _create_yookassa_payment(request, order):
-    idempotence_key = str(uuid.uuid4())
-    payload = {
-        "amount": {
-            "value": f"{order.total_price:.2f}",
-            "currency": "RUB",
-        },
-        "capture": True,
-        "confirmation": {
-            "type": "redirect",
-            "return_url": _build_absolute_url(request, "yookassa_return") + f"?order_id={order.id}",
-        },
-        "description": f"Оплата заказа #{order.id}",
-        "metadata": {
-            "order_id": str(order.id),
-            "user_id": str(order.user_id),
-        },
-    }
-    encoded = base64.b64encode(
-        f"{settings.YOOKASSA_SHOP_ID}:{settings.YOOKASSA_SECRET_KEY}".encode("utf-8")
-    ).decode("ascii")
-    req = urllib_request.Request(
-        "https://api.yookassa.ru/v3/payments",
-        data=json.dumps(payload).encode("utf-8"),
-        method="POST",
-        headers={
-            "Authorization": f"Basic {encoded}",
-            "Content-Type": "application/json",
-            "Idempotence-Key": idempotence_key,
-        },
-    )
-    try:
-        with urllib_request.urlopen(req, timeout=20) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except urllib_error.HTTPError as exc:
-        details = exc.read().decode("utf-8", errors="ignore")
-        raise RuntimeError(details or str(exc)) from exc
-    except urllib_error.URLError as exc:
-        raise RuntimeError(str(exc)) from exc
-
-
-# Проверяем актуальный статус платежа после возврата клиента с ЮKassa.
-def _fetch_yookassa_payment(payment_id):
-    encoded = base64.b64encode(
-        f"{settings.YOOKASSA_SHOP_ID}:{settings.YOOKASSA_SECRET_KEY}".encode("utf-8")
-    ).decode("ascii")
-    req = urllib_request.Request(
-        f"https://api.yookassa.ru/v3/payments/{payment_id}",
-        headers={"Authorization": f"Basic {encoded}"},
-        method="GET",
-    )
-    with urllib_request.urlopen(req, timeout=20) as response:
-        return json.loads(response.read().decode("utf-8"))
+def _apply_yookassa_status(order, payment):
+    validate_payment(order, payment)
+    status = payment.get("status")
+    if status == "succeeded":
+        _mark_order_paid(order)
+    elif status == "canceled" and order.status not in {Order.STATUS_PAID, Order.STATUS_COMPLETED}:
+        _mark_order_status(order, Order.STATUS_CANCELED)
+    return status
 
 
 # Главная страница с каталогом и фильтрами по тегам и цене.
@@ -204,6 +154,26 @@ def index(request):
         "tag_filter_applied": bool(selected_tags),
     }
     return render(request, "store/index.html", context)
+
+
+def contacts_view(request):
+    return render(request, "store/contacts.html")
+
+
+def delivery_view(request):
+    return render(request, "store/delivery.html")
+
+
+def offer_view(request):
+    return render(request, "store/offer.html")
+
+
+def privacy_view(request):
+    return render(request, "store/privacy.html")
+
+
+def requisites_view(request):
+    return render(request, "store/requisites.html")
 
 
 # Детальная страница товара с галереей и похожими позициями по совпадающим тегам.
@@ -378,7 +348,7 @@ def checkout_view(request):
             "form": form,
             "cart_items": cart_items,
             "total_price": total_price,
-            "yookassa_simulation": settings.YOOKASSA_SIMULATION or not _yookassa_enabled(),
+            "yookassa_simulation": settings.YOOKASSA_SIMULATION or not yookassa_enabled(),
         },
     )
 
@@ -387,21 +357,42 @@ def checkout_view(request):
 @login_required
 def start_payment_view(request, order_id):
     order = get_object_or_404(Order.objects.prefetch_related("items"), pk=order_id, user=request.user)
-    if order.status == Order.STATUS_PAID:
+    if order.status in {Order.STATUS_PAID, Order.STATUS_COMPLETED}:
         messages.success(request, f"Заказ №{order.id} уже оплачен.")
         return redirect("index")
 
-    if settings.YOOKASSA_SIMULATION or not _yookassa_enabled():
+    if order.payment_method == Order.PAYMENT_METHOD_CASH:
+        CartItem.objects.filter(user=order.user).delete()
+        messages.success(request, f"Заказ №{order.id} оформлен. Оплата производится курьеру при получении.")
+        return redirect("index")
+
+    if order.status in {Order.STATUS_CANCELED, Order.STATUS_FAILED}:
+        messages.warning(request, "Этот платеж завершен. Оформите новый заказ из текущей корзины.")
+        return redirect("cart")
+
+    if settings.YOOKASSA_SIMULATION or not yookassa_enabled():
         return redirect("yookassa_simulator", order_id=order.id)
 
     try:
-        payment = _create_yookassa_payment(request, order)
-    except RuntimeError as exc:
-        messages.error(request, f"Не удалось создать тестовый платеж ЮKassa: {exc}")
-        return redirect("checkout")
+        if order.provider_payment_id:
+            payment = validate_payment(order, fetch_payment(order.provider_payment_id))
+        else:
+            return_url = _build_absolute_url(request, "yookassa_return") + f"?order_id={order.id}"
+            payment = validate_payment(order, create_payment(order, return_url))
+            order.provider_payment_id = payment["id"]
+            order.save(update_fields=["provider_payment_id"])
+    except YooKassaError:
+        logger.exception("Не удалось создать или получить платеж ЮKassa для заказа %s", order.id)
+        messages.error(request, "ЮKassa временно недоступна. Попробуйте перейти к оплате еще раз.")
+        return redirect("cart")
 
-    order.provider_payment_id = payment.get("id", "")
-    order.save(update_fields=["provider_payment_id"])
+    status = _apply_yookassa_status(order, payment)
+    if status == "succeeded":
+        messages.success(request, f"Оплата заказа №{order.id} уже подтверждена.")
+        return redirect("index")
+    if status == "canceled":
+        messages.warning(request, "Платеж отменен. Оформите новый заказ.")
+        return redirect("cart")
     confirmation = payment.get("confirmation", {})
     confirmation_url = confirmation.get("confirmation_url")
     if not confirmation_url:
@@ -436,31 +427,31 @@ def yookassa_simulator_view(request, order_id):
 
 
 # Обработка возврата пользователя после оплаты в ЮKassa.
+@login_required
 def yookassa_return_view(request):
     order_id = request.GET.get("order_id")
     if not order_id:
         messages.warning(request, "Не удалось определить заказ после возврата из ЮKassa.")
         return redirect("index")
 
-    order = get_object_or_404(Order, pk=order_id)
-    if order.status == Order.STATUS_PAID:
+    order = get_object_or_404(Order, pk=order_id, user=request.user)
+    if order.status in {Order.STATUS_PAID, Order.STATUS_COMPLETED}:
         messages.success(request, f"Оплата подтверждена. Заказ №{order.id} уже оплачен.")
         return redirect("index")
 
-    if order.provider_payment_id and _yookassa_enabled():
+    if order.provider_payment_id and yookassa_enabled():
         try:
-            payment = _fetch_yookassa_payment(order.provider_payment_id)
-        except Exception:
+            payment = fetch_payment(order.provider_payment_id)
+            status = _apply_yookassa_status(order, payment)
+        except YooKassaError:
+            logger.exception("Не удалось проверить платеж ЮKassa для заказа %s", order.id)
             messages.warning(request, "ЮKassa еще не подтвердила платеж. Проверьте статус позже.")
             return redirect("cart")
 
-        status = payment.get("status")
         if status == "succeeded":
-            _mark_order_paid(order)
             messages.success(request, f"Оплата ЮKassa подтверждена. Заказ №{order.id} оплачен.")
             return redirect("index")
         if status == "canceled":
-            _mark_order_status(order, Order.STATUS_CANCELED)
             messages.warning(request, f"ЮKassa сообщила об отмене платежа по заказу №{order.id}.")
             return redirect("cart")
 
@@ -476,29 +467,38 @@ def yookassa_webhook_view(request):
 
     try:
         payload = json.loads(request.body.decode("utf-8"))
-    except json.JSONDecodeError:
+    except (UnicodeDecodeError, json.JSONDecodeError):
         return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
+    if not isinstance(payload, dict):
+        return JsonResponse({"ok": False, "error": "invalid_payload"}, status=400)
 
-    event = payload.get("event")
     payment_object = payload.get("object", {})
-    metadata = payment_object.get("metadata", {})
-    order_id = metadata.get("order_id")
-    if not order_id:
+    if not isinstance(payment_object, dict):
+        return JsonResponse({"ok": False, "error": "invalid_payload"}, status=400)
+    payment_id = payment_object.get("id")
+    if not payment_id:
         return JsonResponse({"ok": True})
+    if not yookassa_enabled():
+        return JsonResponse({"ok": False}, status=503)
 
-    order = Order.objects.filter(pk=order_id).first()
+    order = Order.objects.filter(provider_payment_id=payment_id).first()
+    if not order:
+        order_id = (payment_object.get("metadata") or {}).get("order_id")
+        order = Order.objects.filter(pk=order_id).first() if order_id else None
     if not order:
         return JsonResponse({"ok": True})
 
-    provider_payment_id = payment_object.get("id", "")
-    if provider_payment_id and order.provider_payment_id != provider_payment_id:
-        order.provider_payment_id = provider_payment_id
-        order.save(update_fields=["provider_payment_id"])
+    try:
+        payment = fetch_payment(payment_id)
+        validate_payment(order, payment)
+    except YooKassaError:
+        logger.exception("Не удалось проверить webhook ЮKassa для платежа %s", payment_id)
+        return JsonResponse({"ok": False}, status=503)
 
-    if event == "payment.succeeded":
-        _mark_order_paid(order)
-    elif event == "payment.canceled":
-        _mark_order_status(order, Order.STATUS_CANCELED)
+    if not order.provider_payment_id:
+        order.provider_payment_id = payment_id
+        order.save(update_fields=["provider_payment_id"])
+    _apply_yookassa_status(order, payment)
 
     return JsonResponse({"ok": True})
 

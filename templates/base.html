@@ -1,11 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Flower Atelier{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=16">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=17">
 </head>
 <body>
     <header>
@@ -51,7 +51,19 @@
         {% block body %}{% endblock %}
     </main>
     <footer>
-        <p>2026 Цветочный Магазин</p>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <strong>Flower Atelier</strong>
+                <span>{{ seller.name }} · ИНН {{ seller.inn }}</span>
+            </div>
+            <div class="footer-links" aria-label="Правовая информация">
+                <a href="{% url 'delivery' %}">Доставка и возврат</a>
+                <a href="{% url 'offer' %}">Оферта</a>
+                <a href="{% url 'privacy' %}">Персональные данные</a>
+                <a href="{% url 'requisites' %}">Реквизиты</a>
+                <a href="{% url 'contacts' %}">Контакты</a>
+            </div>
+        </div>
     </footer>
     <script>
         window.addEventListener('DOMContentLoaded', () => {

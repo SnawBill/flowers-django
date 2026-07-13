@@ -16,7 +16,17 @@ DNS-записи домена должны указывать на IP серве
 быть открыты.
 
 Для симуляции оплаты оставь `YOOKASSA_SIMULATION=1`. Для реальных платежей
-укажи ключи ЮKassa и установи `YOOKASSA_SIMULATION=0`.
+укажи `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` и установи
+`YOOKASSA_SIMULATION=0`. Для тестового магазина оставь
+`YOOKASSA_TEST_MODE=1`, для настоящего установи `YOOKASSA_TEST_MODE=0`.
+В личном кабинете ЮKassa добавь URL уведомлений:
+`https://example.com/payments/yookassa/webhook/` для событий
+`payment.succeeded` и `payment.canceled`.
+
+Если в магазине подключены чеки от ЮKassa, установи
+`YOOKASSA_RECEIPTS_ENABLED=1` и укажи подходящий код НДС в
+`YOOKASSA_VAT_CODE`. Код должен соответствовать настройкам кассы и системе
+налогообложения.
 
 ```bash
 docker compose -f docker-compose.prod.yml up --build -d

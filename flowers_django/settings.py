@@ -73,6 +73,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "store.context_processors.site_information",
             ],
         },
     },
@@ -140,7 +141,19 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 YOOKASSA_SHOP_ID = os.getenv("YOOKASSA_SHOP_ID", "")
 YOOKASSA_SECRET_KEY = os.getenv("YOOKASSA_SECRET_KEY", "")
 YOOKASSA_SIMULATION = os.getenv("YOOKASSA_SIMULATION", "1") == "1"
+YOOKASSA_TEST_MODE = env_bool("YOOKASSA_TEST_MODE", True)
+YOOKASSA_RECEIPTS_ENABLED = env_bool("YOOKASSA_RECEIPTS_ENABLED", False)
+YOOKASSA_VAT_CODE = int(os.getenv("YOOKASSA_VAT_CODE", "1"))
 PAYMENT_BASE_URL = os.getenv("PAYMENT_BASE_URL", "")
+
+# Публичные сведения о продавце и условиях доставки.
+SELLER_NAME = os.getenv("SELLER_NAME", "")
+SELLER_INN = os.getenv("SELLER_INN", "")
+SELLER_PHONE = os.getenv("SELLER_PHONE", "")
+SELLER_EMAIL = os.getenv("SELLER_EMAIL", "")
+SELLER_CITY = os.getenv("SELLER_CITY", "")
+DELIVERY_PRICE = os.getenv("DELIVERY_PRICE", "500")
+DELIVERY_TIME = os.getenv("DELIVERY_TIME", "до 2 часов")
 
 # Эти параметры включаются в production через .env после настройки HTTPS.
 if not DEBUG:
