@@ -3645,3 +3645,230 @@ footer {
         justify-content: center;
     }
 }
+
+/* Контактная форма и окончательные правила адаптивной шапки. */
+.contact-form {
+    width: min(760px, 100%);
+    margin: 28px auto 0;
+    padding: clamp(24px, 4vw, 40px);
+    border: 1px solid rgba(198, 90, 124, 0.16);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 22px 54px rgba(90, 49, 64, 0.11);
+    box-sizing: border-box;
+}
+
+.contact-form__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.contact-form__field {
+    min-width: 0;
+    text-align: left;
+}
+
+.contact-form__field--wide {
+    grid-column: 1 / -1;
+}
+
+.contact-form__field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #62404d;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.contact-form__field input,
+.contact-form__field textarea {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 16px;
+    border: 1px solid rgba(157, 81, 105, 0.24);
+    border-radius: 14px;
+    color: #4f2e3a;
+    background: #fffafb;
+    font: inherit;
+    box-sizing: border-box;
+    transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.contact-form__field textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.contact-form__field input:focus,
+.contact-form__field textarea:focus {
+    outline: none;
+    border-color: #bd5275;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(189, 82, 117, 0.12);
+}
+
+.contact-form__field .errorlist {
+    margin: 7px 0 0;
+    padding: 0;
+    color: #a63f4d;
+    font-size: 0.82rem;
+    list-style: none;
+}
+
+.contact-form__submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    margin: 24px auto 0;
+    padding: 0 28px;
+    border: 0;
+    border-radius: 999px;
+    color: #fff;
+    background: linear-gradient(135deg, #a83f62, #d36e8d);
+    box-shadow: 0 14px 28px rgba(168, 63, 98, 0.24);
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.contact-page-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(240px, 0.75fr);
+    align-items: start;
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.contact-page-layout .contact-form,
+.contact-page-layout .legal-card {
+    width: 100%;
+    margin-top: 0;
+    box-sizing: border-box;
+}
+
+body > header {
+    display: grid;
+    grid-template-columns: minmax(250px, 1fr) auto;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+body > header .brand,
+body > header .brand-copy,
+body > header .icons,
+body > header .admin-shortcuts {
+    min-width: 0;
+}
+
+body > header .brand {
+    width: auto;
+    max-width: 100%;
+}
+
+body > header .brand-copy strong,
+body > header .brand-copy small {
+    overflow-wrap: anywhere;
+}
+
+body > header .icons,
+body > header .admin-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+body > header .cart-actions1 {
+    margin: 0;
+}
+
+body > header .cart-actions1 a,
+body > header .cart-actions1 button {
+    max-width: 100%;
+}
+
+@media (max-width: 900px) {
+    body > header {
+        grid-template-columns: minmax(220px, 1fr) auto;
+        gap: 14px;
+    }
+
+    body > header .brand-copy small {
+        max-width: 230px;
+        line-height: 1.35;
+    }
+}
+
+@media (max-width: 720px) {
+    body > header {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body > header .brand {
+        justify-self: center;
+    }
+
+    body > header .icons {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body > header .admin-shortcuts {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body > header .admin-shortcuts .cart-actions1,
+    body > header .admin-shortcuts a,
+    body > header .admin-shortcuts button {
+        width: 100%;
+    }
+
+    .contact-page-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .contact-form__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-form__field--wide {
+        grid-column: auto;
+    }
+
+    body > header .brand-mark {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+    }
+
+    body > header .brand-copy strong {
+        font-size: 1.38rem;
+    }
+
+    body > header .brand-copy small {
+        font-size: 0.64rem;
+    }
+}
+
+@media (max-width: 390px) {
+    body > header .brand-copy small {
+        display: none;
+    }
+
+    body > header .icons {
+        gap: 7px;
+    }
+
+    body > header .cart-actions1 button {
+        padding-inline: 13px;
+        font-size: 0.82rem;
+    }
+}

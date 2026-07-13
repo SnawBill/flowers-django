@@ -207,12 +207,8 @@
 
 <section id="contact" class="contact-section">
     <span class="page-eyebrow">Всегда на связи</span>
-    <h2>Контакты</h2>
-    <p>Поможем выбрать букет и уточнить детали доставки по {{ seller.city }}.</p>
-    <div class="contact-direct">
-        <a href="tel:{{ seller.phone_uri }}">{{ seller.phone }}</a>
-        <a href="mailto:{{ seller.email }}">{{ seller.email }}</a>
-    </div>
-    <a class="contact-details-link" href="{% url 'contacts' %}">Все контакты и реквизиты</a>
+    <h2>Напишите нам</h2>
+    <p>Поможем выбрать букет и уточнить детали доставки по {{ seller.city }}. Ответ придет на указанный вами email.</p>
+    {% include 'store/_contact_form.html' %}
 </section>
 {% endblock %}

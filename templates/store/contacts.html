@@ -7,21 +7,12 @@
         <h1>Контакты</h1>
         <p>Ответим на вопросы о букете, доставке, оплате или уже оформленном заказе.</p>
     </header>
-    <div class="legal-grid legal-grid--contacts">
-        <article class="legal-card">
-            <span class="legal-card__label">Телефон</span>
-            <h2><a href="tel:{{ seller.phone_uri }}">{{ seller.phone }}</a></h2>
-            <p>Позвоните, чтобы согласовать состав букета или детали доставки.</p>
-        </article>
-        <article class="legal-card">
-            <span class="legal-card__label">Электронная почта</span>
-            <h2><a href="mailto:{{ seller.email }}">{{ seller.email }}</a></h2>
-            <p>Для обращений по заказам, возвратам и обработке персональных данных.</p>
-        </article>
+    <div class="contact-page-layout">
+        {% include 'store/_contact_form.html' %}
         <article class="legal-card">
             <span class="legal-card__label">Территория работы</span>
             <h2>{{ seller.city }}</h2>
-            <p>Заказы принимаются онлайн. Пункта самовывоза нет.</p>
+            <p>Заказы принимаются онлайн. Ответ на обращение придет на email, указанный в форме.</p>
         </article>
     </div>
 </section>

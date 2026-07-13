@@ -1,4 +1,5 @@
-from django.test import SimpleTestCase, override_settings
+from django.core import mail
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 
@@ -43,3 +44,51 @@ class LegalPagesTests(SimpleTestCase):
         self.assertContains(response, reverse("offer"))
         self.assertContains(response, reverse("privacy"))
         self.assertContains(response, reverse("requisites"))
+
+    def test_contacts_are_not_rendered_publicly(self):
+        for route_name in ("contacts", "delivery", "offer", "requisites"):
+            with self.subTest(route_name=route_name):
+                response = self.client.get(reverse(route_name))
+                self.assertNotContains(response, "+7 900 000-00-00")
+                self.assertNotContains(response, "seller@example.com")
+
+
+@override_settings(
+    STORAGES=TEST_STORAGES,
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    DEFAULT_FROM_EMAIL="site@example.com",
+    CONTACT_EMAIL="owner@example.com",
+    SELLER_CITY="Уссурийск",
+)
+class ContactFormTests(TestCase):
+    payload = {
+        "name": "Анна",
+        "email": "anna@example.com",
+        "subject": "Доставка букета",
+        "message": "Подскажите доступное время доставки.",
+        "website": "",
+    }
+
+    def test_contact_form_sends_email_to_owner(self):
+        response = self.client.post(reverse("contacts"), self.payload)
+
+        self.assertRedirects(response, reverse("contacts"))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["owner@example.com"])
+        self.assertEqual(mail.outbox[0].reply_to, ["anna@example.com"])
+        self.assertIn("Доставка букета", mail.outbox[0].subject)
+
+    def test_honeypot_blocks_spam(self):
+        payload = {**self.payload, "website": "https://spam.example"}
+
+        response = self.client.post(reverse("contacts"), payload)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mail.outbox, [])
+
+    def test_second_message_is_rate_limited(self):
+        self.client.post(reverse("contacts"), self.payload)
+        response = self.client.post(reverse("contacts"), self.payload)
+
+        self.assertRedirects(response, reverse("contacts"))
+        self.assertEqual(len(mail.outbox), 1)

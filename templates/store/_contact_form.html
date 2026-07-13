@@ -1,0 +1,31 @@
+<form id="contact-form" class="contact-form" action="{% url 'contacts' %}#contact-form" method="post">
+    {% csrf_token %}
+    {{ contact_form.website }}
+    {% if contact_form.non_field_errors %}
+    <div class="form-error-inline">{{ contact_form.non_field_errors }}</div>
+    {% endif %}
+    <div class="contact-form__grid">
+        <div class="contact-form__field">
+            <label for="{{ contact_form.name.id_for_label }}">{{ contact_form.name.label }}</label>
+            {{ contact_form.name }}
+            {{ contact_form.name.errors }}
+        </div>
+        <div class="contact-form__field">
+            <label for="{{ contact_form.email.id_for_label }}">{{ contact_form.email.label }}</label>
+            {{ contact_form.email }}
+            {{ contact_form.email.errors }}
+        </div>
+        <div class="contact-form__field contact-form__field--wide">
+            <label for="{{ contact_form.subject.id_for_label }}">{{ contact_form.subject.label }}</label>
+            {{ contact_form.subject }}
+            {{ contact_form.subject.errors }}
+        </div>
+        <div class="contact-form__field contact-form__field--wide">
+            <label for="{{ contact_form.message.id_for_label }}">{{ contact_form.message.label }}</label>
+            {{ contact_form.message }}
+            {{ contact_form.message.errors }}
+        </div>
+    </div>
+    <button class="contact-form__submit" type="submit">Отправить сообщение</button>
+    <p class="form-legal-note">Отправляя форму, вы соглашаетесь с <a href="{% url 'privacy' %}">политикой обработки персональных данных</a>.</p>
+</form>

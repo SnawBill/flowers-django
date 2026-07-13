@@ -155,6 +155,19 @@ SELLER_CITY = os.getenv("SELLER_CITY", "")
 DELIVERY_PRICE = os.getenv("DELIVERY_PRICE", "500")
 DELIVERY_TIME = os.getenv("DELIVERY_TIME", "до 2 часов")
 
+# Почтовый ящик для обращений с сайта. В production используется SMTP.
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
+)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "webmaster@localhost")
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", SELLER_EMAIL)
+
 # Эти параметры включаются в production через .env после настройки HTTPS.
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

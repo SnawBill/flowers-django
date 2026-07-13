@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.mail import EmailMessage
 from django.db.models import Count, F, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -15,7 +16,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import CheckoutForm, ProductForm, ProfileForm, RegistrationForm
+from .forms import CheckoutForm, ContactForm, ProductForm, ProfileForm, RegistrationForm
 from .models import CartItem, Order, OrderItem, Product, ProductImage, Profile, Tag
 from .payments import YooKassaError, create_payment, fetch_payment, validate_payment, yookassa_enabled
 
@@ -152,12 +153,46 @@ def index(request):
         "min_price": min_price,
         "max_price": max_price,
         "tag_filter_applied": bool(selected_tags),
+        "contact_form": ContactForm(),
     }
     return render(request, "store/index.html", context)
 
 
 def contacts_view(request):
-    return render(request, "store/contacts.html")
+    form = ContactForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        last_sent_at = request.session.get("contact_last_sent_at", 0)
+        now = int(timezone.now().timestamp())
+        if now - last_sent_at < 60:
+            messages.warning(request, "Подождите минуту перед повторной отправкой.")
+            return redirect("contacts")
+
+        smtp_backend = "django.core.mail.backends.smtp.EmailBackend"
+        if not settings.CONTACT_EMAIL or (settings.EMAIL_BACKEND == smtp_backend and not settings.EMAIL_HOST):
+            messages.error(request, "Почтовая форма временно недоступна. Попробуйте позже.")
+            return render(request, "store/contacts.html", {"contact_form": form})
+
+        try:
+            EmailMessage(
+                subject=f"[Flower Atelier] {form.cleaned_data['subject']}",
+                body=(
+                    f"Имя: {form.cleaned_data['name']}\n"
+                    f"Email: {form.cleaned_data['email']}\n\n"
+                    f"{form.cleaned_data['message']}"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.CONTACT_EMAIL],
+                reply_to=[form.cleaned_data["email"]],
+            ).send(fail_silently=False)
+        except Exception:
+            logger.exception("Contact form email delivery failed")
+            messages.error(request, "Не удалось отправить сообщение. Попробуйте позже.")
+        else:
+            request.session["contact_last_sent_at"] = now
+            messages.success(request, "Сообщение отправлено. Мы ответим на указанный email.")
+            return redirect("contacts")
+
+    return render(request, "store/contacts.html", {"contact_form": form})
 
 
 def delivery_view(request):

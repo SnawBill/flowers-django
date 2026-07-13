@@ -6,6 +6,35 @@ from django.contrib.auth.models import User
 from .models import Order, Product, Profile
 
 
+# Форма обратной связи не раскрывает адрес получателя в HTML.
+class ContactForm(forms.Form):
+    name = forms.CharField(
+        label="Ваше имя",
+        max_length=100,
+        widget=forms.TextInput(attrs={"placeholder": "Как к вам обращаться", "autocomplete": "name"}),
+    )
+    email = forms.EmailField(
+        label="Email для ответа",
+        widget=forms.EmailInput(attrs={"placeholder": "example@mail.ru", "autocomplete": "email"}),
+    )
+    subject = forms.CharField(
+        label="Тема",
+        max_length=160,
+        widget=forms.TextInput(attrs={"placeholder": "Выбор букета, доставка или заказ"}),
+    )
+    message = forms.CharField(
+        label="Сообщение",
+        max_length=3000,
+        widget=forms.Textarea(attrs={"rows": 6, "placeholder": "Опишите ваш вопрос"}),
+    )
+    website = forms.CharField(required=False, widget=forms.HiddenInput)
+
+    def clean_website(self):
+        if self.cleaned_data["website"]:
+            raise forms.ValidationError("Не удалось отправить сообщение.")
+        return ""
+
+
 # Форма регистрации с обязательным email.
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField(label="Почта")

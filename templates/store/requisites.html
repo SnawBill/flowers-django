@@ -13,8 +13,7 @@
             <div><dt>Статус</dt><dd>Налогоплательщик налога на профессиональный доход (самозанятый)</dd></div>
             <div><dt>ИНН</dt><dd>{{ seller.inn }}</dd></div>
             <div><dt>Место осуществления деятельности</dt><dd>г. {{ seller.city }}</dd></div>
-            <div><dt>Телефон</dt><dd><a href="tel:{{ seller.phone_uri }}">{{ seller.phone }}</a></dd></div>
-            <div><dt>Email</dt><dd><a href="mailto:{{ seller.email }}">{{ seller.email }}</a></dd></div>
+            <div><dt>Обращения</dt><dd><a href="{% url 'contacts' %}">Форма обратной связи</a></dd></div>
         </dl>
     </div>
 </section>
